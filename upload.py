@@ -1,3 +1,4 @@
+from parser import parse_csv, parse_xlsx
 import os
 import pandas as pd
 from fastapi import APIRouter, UploadFile, File, HTTPException
@@ -15,8 +16,8 @@ async def upload_csv(file: UploadFile = File(...)):
     file_path = f"{UPLOAD_DIR}/{file.filename}"
     with open(file_path, "wb") as f:
         f.write(await file.read())
-    df = pd.read_csv(file_path)
-    return {"message": "CSV uploaded", "rows": len(df), "columns": list(df.columns)}
+    vulnerabilities = parse_csv(file_path)
+    return {"message": "CSV uploaded", "total": len(vulnerabilities), "data": vulnerabilities}
 
 @router.post("/upload/xlsx")
 async def upload_xlsx(file: UploadFile = File(...)):
