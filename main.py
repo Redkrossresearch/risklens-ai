@@ -3,8 +3,10 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database import get_db
 from auth import hash_password, verify_password, create_access_token
+from upload import router as upload_router
 
 app = FastAPI(title="RiskLens AI")
+app.include_router(upload_router)
 
 class UserRegister(BaseModel):
     username: str
