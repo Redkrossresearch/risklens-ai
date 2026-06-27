@@ -1,0 +1,4 @@
+Title,CVE,Severity,Host,Description
+SMB Signing Disabled,CVE-2023-1111,Critical,192.168.1.10,SMB Signing is disabled on the server
+Weak TLS Configuration,CVE-2023-2222,High,192.168.1.20,Server supports weak TLS versions
+Anonymous FTP Enabled,CVE-2023-3333,Medium,192.168.1.30,Anonymous login is enabled
