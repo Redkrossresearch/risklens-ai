@@ -26,3 +26,9 @@ def verify_token(token: str):
         return payload
     except JWTError:
         return None
+        # Role check function
+def get_role_from_token(token: str):
+    payload = verify_token(token)
+    if payload is None:
+        return None
+    return payload.get("role", "viewer")
