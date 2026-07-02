@@ -5,11 +5,14 @@ from pydantic import BaseModel
 from database import get_db
 from auth import hash_password, verify_password, create_access_token
 from upload import router as upload_router
+from ticketing.routes import router as ticket_router
 from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI(title="RiskLens AI")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(upload_router)
+app.include_router(ticket_router)
 
 class UserRegister(BaseModel):
     username: str
