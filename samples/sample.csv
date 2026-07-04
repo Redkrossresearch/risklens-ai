@@ -1,0 +1,4 @@
+Title,CVE,Severity,Host,Description
+SQL Injection,CVE-2025-1234,Critical,192.168.1.10,SQL Injection vulnerability found.
+Cross Site Scripting,CVE-2024-5678,High,192.168.1.11,Stored XSS vulnerability.
+Weak Password Policy,CVE-2023-9876,Medium,192.168.1.12,Weak password policy detected.

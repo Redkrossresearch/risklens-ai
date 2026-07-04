@@ -1,0 +1,2 @@
+Title,CVE,Severity,Host,Description
+,CVE-2025-1234,Critical,192.168.1.10,SQL Injection vulnerability found.

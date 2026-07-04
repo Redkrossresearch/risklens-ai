@@ -1,0 +1,2 @@
+Title,CVE,Severity,Host,Description
+SQL Injection,ABC123,Critical,192.168.1.10,SQL Injection vulnerability found.
