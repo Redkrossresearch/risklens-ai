@@ -1,10 +1,13 @@
- import { Button } from "@/components/ui/button";
+import Sidebar from "./components/Sidebar";
+import UploadPage from "./pages/UploadPage";
 
 function App() {
   return (
-    <Button>Click Me</Button>
+    <div className="flex">
+      <Sidebar />
+      <UploadPage />
+    </div>
   );
 }
 
 export default App;
-

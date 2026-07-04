@@ -1,8 +1,16 @@
-import React from 'react';
- export default function UploadPage() {
-   return (
-     <div className="text-gray-700 text-xl font-semibold">
-       Upload Page — Coming Soon
-     </div>
-   );
- }  
+import Navbar from "../components/Navbar";
+import FileUpload from "../components/FileUpload";
+
+function UploadPage() {
+  return (
+    <div className="flex-1 bg-gray-100 min-h-screen">
+      <Navbar />
+
+      <div className="p-6">
+        <FileUpload />
+      </div>
+    </div>
+  );
+}
+
+export default UploadPage;

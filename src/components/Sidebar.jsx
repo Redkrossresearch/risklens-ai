@@ -1,30 +1,29 @@
-import { Link, useLocation } from "react-router-dom";
-
-const links = [
-  { label: "Upload", path: "/" },
-  { label: "Dashboard", path: "/dashboard" },
-];
-
-export default function Sidebar() {
-  const { pathname } = useLocation();
+function Sidebar() {
   return (
-    <aside className="w-56 bg-white border-r border-gray-200 flex flex-col p-4">
-      <h1 className="text-xl font-bold text-blue-600 mb-8">RiskLens AI</h1>
-      <nav className="flex flex-col gap-2">
-        {links.map((link) => (
-          <Link
-            key={link.path}
-            to={link.path}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-              pathname === link.path
-                ? "bg-blue-50 text-blue-600"
-                : "text-gray-600 hover:bg-gray-100"
-            }`}
-          >
-            {link.label}
-          </Link>
-        ))}
-      </nav>
-    </aside>
+    <div className="w-64 h-screen bg-gray-900 text-white p-5">
+      <h1 className="text-2xl font-bold mb-8">
+        RiskLens AI
+      </h1>
+
+      <ul className="space-y-4">
+        <li className="cursor-pointer hover:text-blue-400">
+          Dashboard
+        </li>
+
+        <li className="cursor-pointer hover:text-blue-400">
+          Upload File
+        </li>
+
+        <li className="cursor-pointer hover:text-blue-400">
+          Reports
+        </li>
+
+        <li className="cursor-pointer hover:text-blue-400">
+          Settings
+        </li>
+      </ul>
+    </div>
   );
 }
+
+export default Sidebar;
