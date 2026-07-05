@@ -87,3 +87,18 @@ def executive_report():
 def technical_report():
     path = generate_technical_report(parsed_vulnerabilities, COMPLIANCE_DATA)
     return {"message": "Technical report generated", "path": path}
+from ai_analyzer import analyze_vulnerability
+
+@app.post("/analyze")
+def analyze(token: str, vulnerability_id: str, title: str, severity: str, description: str):
+    role = get_role_from_token(token)
+    if role not in ["admin", "analyst"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    result = analyze_vulnerability(title, severity, description)
+    return {
+        "vulnerability_id": vulnerability_id,
+        "title": title,
+        "severity": severity,
+        "ai_analysis": result["ai_analysis"],
+        "status": result["status"]
+    }
