@@ -51,6 +51,7 @@ def login(user: UserLogin):
     return {"access_token": token, "token_type": "bearer", "role": users_db[user.username]["role"]}
 
 from auth import get_role_from_token
+parsed_vulnerabilities = []
 
 @app.get("/admin/users")
 def get_users(token: str):
@@ -65,3 +66,24 @@ def get_vulnerabilities(token: str):
     if role not in ["admin", "analyst"]:
         raise HTTPException(status_code=403, detail="Access denied")
     return {"message": "Vulnerabilities accessible"}
+from report_generator import generate_executive_report, generate_technical_report
+
+# Sample compliance data
+COMPLIANCE_DATA = {
+    "ISO 27001": 81,
+    "NIST CSF": 76,
+    "GDPR": 63,
+    "PCI-DSS": 58,
+    "CIS v8": 79,
+    "HIPAA": 44
+}
+
+@app.get("/report/executive")
+def executive_report():
+    path = generate_executive_report(parsed_vulnerabilities, COMPLIANCE_DATA)
+    return {"message": "Executive report generated", "path": path}
+
+@app.get("/report/technical")
+def technical_report():
+    path = generate_technical_report(parsed_vulnerabilities, COMPLIANCE_DATA)
+    return {"message": "Technical report generated", "path": path}
