@@ -52,6 +52,7 @@ def login(user: UserLogin):
 
 from auth import get_role_from_token
 parsed_vulnerabilities = []
+uploaded_files_log = []
 
 @app.get("/admin/users")
 def get_users(token: str):
@@ -101,4 +102,34 @@ def analyze(token: str, vulnerability_id: str, title: str, severity: str, descri
         "severity": severity,
         "ai_analysis": result["ai_analysis"],
         "status": result["status"]
+    }
+@app.get("/api/stats")
+def get_stats():
+    total = len(parsed_vulnerabilities)
+    critical = sum(1 for v in parsed_vulnerabilities if v.get("severity","").lower() == "critical")
+    high = sum(1 for v in parsed_vulnerabilities if v.get("severity","").lower() == "high")
+    medium = sum(1 for v in parsed_vulnerabilities if v.get("severity","").lower() == "medium")
+    low = sum(1 for v in parsed_vulnerabilities if v.get("severity","").lower() == "low")
+    return {
+        "total_vulnerabilities": total,
+        "critical": critical,
+        "high": high,
+        "medium": medium,
+        "low": low,
+        "files_processed": len(uploaded_files_log) if 'uploaded_files_log' in globals() else 0,
+        "uploaded_files": uploaded_files_log[-4:] if 'uploaded_files_log' in globals() else [],
+        "compliance": {
+            "ISO 27001": 81,
+            "NIST CSF": 76,
+            "GDPR": 63,
+            "PCI-DSS": 58,
+            "CIS v8": 79,
+            "HIPAA": 44
+        },
+        "tickets": [
+            {"id": "#001", "text": "Fix CVE-2024-1234 on prod server", "severity": "Critical"},
+            {"id": "#002", "text": "GDPR data retention policy gap", "severity": "High"},
+            {"id": "#003", "text": "SSL cert renewal — 14 days left", "severity": "Medium"},
+            {"id": "#004", "text": "API rate limiting not configured", "severity": "Low"},
+        ]
     }
