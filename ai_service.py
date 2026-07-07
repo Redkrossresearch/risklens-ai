@@ -1,24 +1,8 @@
 from langchain_community.llms import Ollama
-import re
-
 from prompt import PROMPT_TEMPLATE
+import json
 
 llm = Ollama(model="qwen3:1.7b")
-
-
-def extract_risk_score(text):
-
-    score = re.search(r'(\d{1,3})\s*/\s*100', text)
-
-    if score:
-        return int(score.group(1))
-
-    score = re.search(r'Risk Score.*?(\d{1,3})', text, re.IGNORECASE)
-
-    if score:
-        return int(score.group(1))
-
-    return None
 
 
 def generate_risk_analysis(vulnerability):
@@ -31,6 +15,23 @@ def generate_risk_analysis(vulnerability):
 
     response = llm.invoke(prompt)
 
-    vulnerability.risk_score = extract_risk_score(response)
+    try:
 
-    return response
+        data = json.loads(response)
+
+        vulnerability.risk_title = data.get("risk_title")
+        vulnerability.executive_summary = data.get("executive_summary")
+        vulnerability.business_impact = data.get("business_impact")
+        vulnerability.likelihood = data.get("likelihood")
+        vulnerability.risk_rating = data.get("risk_rating")
+        vulnerability.risk_score = data.get("risk_score")
+        vulnerability.remediation = data.get("remediation")
+
+        return data
+
+    except json.JSONDecodeError:
+
+        return {
+            "error": "AI did not return valid JSON.",
+            "raw_response": response
+        }

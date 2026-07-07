@@ -7,14 +7,21 @@ Title: {title}
 Severity: {severity}
 Description: {description}
 
-Generate the following:
+Return ONLY valid JSON.
 
-1. Risk Title
-2. Business Impact
-3. Likelihood
-4. Risk Rating
-5. Risk Score (0-100)
-6. Remediation
+Do not write explanations.
+Do not write markdown.
+Do not use ```json.
 
-Return the response in a professional format.
+Return exactly this format:
+
+{{
+    "risk_title": "",
+    "executive_summary": "",
+    "business_impact": "",
+    "likelihood": "",
+    "risk_rating": "",
+    "risk_score": 0,
+    "remediation": ""
+}}
 """

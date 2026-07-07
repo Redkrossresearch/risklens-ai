@@ -1,5 +1,6 @@
 from models import VulnerabilityModel
 from ai_service import generate_risk_analysis
+import json
 
 print("========== RiskLens AI ==========\n")
 
@@ -14,10 +15,10 @@ vulnerability = VulnerabilityModel(
 
 print("\nGenerating AI Risk Analysis...\n")
 
-response = generate_risk_analysis(vulnerability)
+result = generate_risk_analysis(vulnerability)
 
-print("========== AI RISK ANALYSIS ==========\n")
-print(response)
+print("\n========== AI JSON RESPONSE ==========\n")
+print(json.dumps(result, indent=4))
 
-print("\n========== Vulnerability Details ==========\n")
+print("\n========== UPDATED MODEL ==========\n")
 print(vulnerability.model_dump_json(indent=4))
