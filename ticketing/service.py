@@ -4,6 +4,7 @@ from ticketing.models import Ticket
 from ticketing.repository import (
     create_ticket as create_ticket_repo,
     get_ticket_by_id,
+    get_all_tickets,
     update_ticket as update_ticket_repo,
     delete_ticket as delete_ticket_repo,
 )
@@ -26,6 +27,20 @@ def create_ticket(db: Session, ticket_data: CreateTicketRequest):
     )
 
     return create_ticket_repo(db, ticket)
+
+
+def get_ticket(db: Session, ticket_id: str):
+    """
+    Fetch a single ticket by ID.
+    """
+    return get_ticket_by_id(db, ticket_id)
+
+
+def get_tickets(db: Session):
+    """
+    Fetch all tickets.
+    """
+    return get_all_tickets(db)
 
 
 def update_ticket(

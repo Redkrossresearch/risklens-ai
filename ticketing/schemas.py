@@ -1,6 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
-from datetime import date
+
 
 class CreateTicketRequest(BaseModel):
     vulnerability_id: str
@@ -22,4 +22,6 @@ class TicketResponse(BaseModel):
     status: str
     assigned_to: str
     priority: str
-    due_date: date
+    due_date: str
+
+    model_config = ConfigDict(from_attributes=True)
