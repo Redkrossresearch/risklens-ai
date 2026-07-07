@@ -1,8 +1,5 @@
-from langchain_community.llms import Ollama
 from models import VulnerabilityModel
-from prompt import PROMPT_TEMPLATE
-
-llm = Ollama(model="qwen3:1.7b")
+from ai_service import generate_risk_analysis
 
 print("========== RiskLens AI ==========\n")
 
@@ -15,15 +12,9 @@ vulnerability = VulnerabilityModel(
     description=input("Description: ")
 )
 
-prompt = PROMPT_TEMPLATE.format(
-    title=vulnerability.title,
-    severity=vulnerability.severity,
-    description=vulnerability.description
-)
-
 print("\nGenerating AI Risk Analysis...\n")
 
-response = llm.invoke(prompt)
+response = generate_risk_analysis(vulnerability)
 
 print("========== AI RISK ANALYSIS ==========\n")
 print(response)

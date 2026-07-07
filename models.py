@@ -6,12 +6,14 @@ class ComplianceModel(BaseModel):
     nist: str
     cis: str
 
+
 class TicketModel(BaseModel):
     ticket_id: str
     status: str
     assigned_to: str
     due_date: str
     priority: str
+
 
 class VulnerabilityModel(BaseModel):
     vulnerability_id: str
@@ -20,10 +22,13 @@ class VulnerabilityModel(BaseModel):
     severity: str
     host: str
     description: str
+
     risk_title: Optional[str] = None
     business_impact: Optional[str] = None
     likelihood: Optional[str] = None
     risk_rating: Optional[str] = None
+    risk_score: Optional[int] = None
     remediation: Optional[str] = None
+
     compliance: Optional[ComplianceModel] = None
     ticket: Optional[TicketModel] = None

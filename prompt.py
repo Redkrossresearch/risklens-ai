@@ -1,5 +1,5 @@
 PROMPT_TEMPLATE = """
-You are a Cyber Security Risk Analyst.
+You are an Expert Cyber Security Risk Analyst.
 
 Analyze the following vulnerability.
 
@@ -13,7 +13,8 @@ Generate the following:
 2. Business Impact
 3. Likelihood
 4. Risk Rating
-5. Remediation
+5. Risk Score (0-100)
+6. Remediation
 
-Return the response in a clear and professional format.
+Return the response in a professional format.
 """
