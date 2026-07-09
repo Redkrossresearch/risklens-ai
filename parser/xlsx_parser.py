@@ -8,17 +8,16 @@ from models import VulnerabilityModel
 from parser.validator import validate_severity, validate_cve
 from parser.logger_config import logger
 
-def parse_csv(file_path):
+def parse_xlsx(file_path):
     """
-    Reads a CSV file and returns a list of VulnerabilityModel objects.
+    Reads an Excel (.xlsx) file and returns a list of VulnerabilityModel objects.
     """
 
     try:
-        # Read CSV
-        df = pd.read_csv(file_path)
-        logger.info("CSV file loaded successfully.")
+        # Read Excel
+        df = pd.read_excel(file_path, engine="openpyxl")
+        logger.info("Excel file loaded successfully.")
 
-        # Validate required columns
         required_columns = [
             "Title",
             "CVE",
@@ -38,13 +37,8 @@ def parse_csv(file_path):
             return []
 
     except FileNotFoundError:
-        logger.error("CSV file not found.")
-        print("CSV file not found.")
-        return []
-
-    except pd.errors.EmptyDataError:
-        logger.error("CSV file is empty.")
-        print("CSV file is empty.")
+        logger.error("Excel file not found.")
+        print("Excel file not found.")
         return []
 
     except Exception as e:
@@ -57,7 +51,6 @@ def parse_csv(file_path):
 
     for index, row in df.iterrows():
 
-        # Check for missing values
         if (
             pd.isna(row["Title"]) or
             pd.isna(row["CVE"]) or
@@ -69,19 +62,16 @@ def parse_csv(file_path):
             print(f"Skipping row {index + 2}: Missing required data")
             continue
 
-        # Validate Severity
         if not validate_severity(row["Severity"]):
             logger.warning(f"Invalid Severity in row {index + 2}")
             print(f"Skipping row {index + 2}: Invalid Severity")
             continue
 
-        # Validate CVE
         if not validate_cve(row["CVE"]):
             logger.warning(f"Invalid CVE in row {index + 2}")
             print(f"Skipping row {index + 2}: Invalid CVE")
             continue
 
-        # Check duplicate CVEs
         if row["CVE"] in seen_cves:
             logger.warning(f"Duplicate CVE found: {row['CVE']}")
             print(f"Skipping row {index + 2}: Duplicate CVE")
@@ -100,21 +90,21 @@ def parse_csv(file_path):
 
         vulnerabilities.append(vulnerability)
 
-    print("\n========== Parsing Summary ==========")
+    print("\n========== XLSX Parsing Summary ==========")
     print(f"Total Rows    : {len(df)}")
     print(f"Valid Records : {len(vulnerabilities)}")
     print(f"Rejected Rows : {len(df) - len(vulnerabilities)}")
 
-    logger.info("CSV Parsing Completed")
+    logger.info("XLSX Parsing Completed")
 
     return vulnerabilities
 
 
 if __name__ == "__main__":
 
-    file_name = input("Enter CSV file name: ")
+    file_name = input("Enter Excel file name: ")
 
-    vulnerabilities = parse_csv(f"samples/{file_name}")
+    vulnerabilities = parse_xlsx(f"samples/{file_name}")
 
     for vulnerability in vulnerabilities:
         print(vulnerability.model_dump())
