@@ -8,12 +8,15 @@ from auth import hash_password, verify_password, create_access_token
 from upload import router as upload_router
 from ticketing.routes import router as ticket_router
 from fastapi.staticfiles import StaticFiles
-
+from report import router as report_router
+from dashboard import router as dashboard_router
 
 app = FastAPI(title="RiskLens AI")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(upload_router)
 app.include_router(ticket_router)
+app.include_router(report_router)
+app.include_router(dashboard_router)
 Base.metadata.create_all(bind=engine)
 
 class UserRegister(BaseModel):
