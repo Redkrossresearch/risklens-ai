@@ -1,3 +1,4 @@
+import hashlib
 import pdfplumber
 import re
 import sys
@@ -8,6 +9,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from models import VulnerabilityModel
 from parser.validator import validate_severity, validate_cve
 from parser.logger_config import logger
+
+
+def generate_stable_id(title, cve, host):
+    raw = f"{title}:{cve}:{host}".lower().strip()
+    return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 
 def parse_pdf(file_path):
@@ -68,7 +74,11 @@ def parse_pdf(file_path):
         seen_cves.add(cve)
 
         vulnerability = VulnerabilityModel(
-            vulnerability_id=f"VULN-{index+1:03}",
+            vulnerability_id=generate_stable_id(
+                title,
+                cve,
+                host
+            ),
             title=title,
             cve=cve,
             severity=severity,
