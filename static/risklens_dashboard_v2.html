@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RiskLens AI — Dashboard</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f0e; --surface-1: #1a1a19; --surface-2: #212120;
+    --border: rgba(255,255,255,0.09);
+    --text-primary: #f2f1eb; --text-secondary: #b0afa8; --text-muted: #6e6d69;
+    --text-success: #1baf7a; --text-danger: #e24b4a; --text-warning: #eda100; --text-accent: #3987e5;
+    --bg-success: rgba(27,175,122,0.12); --bg-danger: rgba(226,75,74,0.12);
+    --bg-warning: rgba(237,161,0,0.12); --bg-accent: rgba(57,135,229,0.12);
+  }
+  body { background: var(--bg); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; min-height: 100vh; }
+  .db { max-width: 1150px; margin: 0 auto; padding: 1.5rem; }
+
+  /* Topbar */
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding-bottom: 1.1rem; border-bottom: 0.5px solid var(--border); margin-bottom: 1.4rem; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 36px; height: 36px; border-radius: 9px; background: var(--bg-danger); display: flex; align-items: center; justify-content: center; }
+  .logo-icon i { color: var(--text-danger); font-size: 20px; }
+  .logo-name { font-size: 17px; font-weight: 600; }
+  .logo-sub { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .status-badge { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-success); background: var(--bg-success); padding: 5px 12px; border-radius: 20px; border: 0.5px solid rgba(27,175,122,0.25); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-success); animation: pulse 2s infinite; }
+  .offline-badge { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-warning); background: var(--bg-warning); padding: 5px 12px; border-radius: 20px; border: 0.5px solid rgba(237,161,0,0.25); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .api-indicator { font-size: 11px; color: var(--text-muted); }
+
+  /* KPI */
+  .kpi-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 1.2rem; }
+  .kpi { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; }
+  .kpi-label { font-size: 11px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .kpi-val { font-size: 28px; font-weight: 600; line-height: 1; }
+  .kpi-delta { font-size: 11px; margin-top: 5px; color: var(--text-muted); }
+  .kpi-loading { font-size: 22px; color: var(--text-muted); }
+
+  /* Cards */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.2rem; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 1.2rem; }
+  .card { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .card-title { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 7px; }
+  .card-title i { font-size: 15px; color: var(--text-muted); }
+
+  /* Pills */
+  .pill { font-size: 11px; padding: 2px 9px; border-radius: 20px; font-weight: 500; }
+  .pill-ok   { background: var(--bg-success); color: var(--text-success); border: 0.5px solid rgba(27,175,122,0.2); }
+  .pill-warn { background: var(--bg-warning); color: var(--text-warning); border: 0.5px solid rgba(237,161,0,0.2); }
+  .pill-err  { background: var(--bg-danger);  color: var(--text-danger);  border: 0.5px solid rgba(226,75,74,0.2); }
+  .pill-info { background: var(--bg-accent);  color: var(--text-accent);  border: 0.5px solid rgba(57,135,229,0.2); }
+  .pill-muted{ background: rgba(255,255,255,0.05); color: var(--text-muted); border: 0.5px solid var(--border); }
+
+  /* Risk bars */
+  .risk-item { margin-bottom: 11px; }
+  .risk-row  { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .risk-name { font-size: 12px; color: var(--text-secondary); }
+  .risk-score{ font-size: 12px; font-weight: 600; }
+  .bar-track { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.07); overflow: hidden; }
+  .bar-fill  { height: 100%; border-radius: 3px; }
+  .c-crit { background: #e24b4a; } .c-high { background: #eda100; }
+  .c-med  { background: #3987e5; } .c-low  { background: #1baf7a; }
+
+  /* Compliance */
+  .comp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .comp-item { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 8px; padding: 0.65rem 0.9rem; display: flex; align-items: center; justify-content: space-between; }
+  .comp-name { font-size: 12px; font-weight: 500; }
+  .comp-sub  { font-size: 10px; color: var(--text-muted); }
+  .comp-pct  { font-size: 14px; font-weight: 600; }
+  .pct-pass { color: var(--text-success); } .pct-warn { color: var(--text-warning); } .pct-fail { color: var(--text-danger); }
+
+  /* Upload table */
+  .upload-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .upload-table th { color: var(--text-muted); font-weight: 400; text-align: left; padding: 3px 0 8px; border-bottom: 0.5px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .upload-table td { padding: 7px 0; border-bottom: 0.5px solid var(--border); color: var(--text-secondary); vertical-align: middle; }
+  .upload-table tr:last-child td { border-bottom: none; }
+  .upload-table td:first-child { color: var(--text-primary); }
+
+  /* Tickets */
+  .ticket-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--border); }
+  .ticket-item:last-child { border-bottom: none; }
+  .ticket-id   { font-size: 10px; color: var(--text-muted); white-space: nowrap; margin-top: 2px; font-family: monospace; }
+  .ticket-text { font-size: 12px; color: var(--text-secondary); flex: 1; line-height: 1.45; }
+
+  /* Auth */
+  .auth-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .auth-row:last-child { margin-bottom: 0; }
+  .auth-icon-wrap { width: 34px; height: 34px; border-radius: 8px; background: var(--surface-2); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .auth-icon-wrap i { font-size: 16px; color: var(--text-muted); }
+  .auth-detail { flex: 1; }
+  .auth-name { font-size: 12px; font-weight: 500; }
+  .auth-sub  { font-size: 10px; color: var(--text-muted); font-family: monospace; }
+
+  /* Team Progress Section */
+  .section-title { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .team-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 1.2rem; }
+  .team-card { background: var(--surface-1); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem; position: relative; overflow: hidden; }
+  .team-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .team-card.complete::before { background: var(--text-success); }
+  .team-card.partial::before  { background: var(--text-warning); }
+  .team-card.pending::before  { background: var(--text-danger); }
+  .team-member-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+  .team-member-role { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+  .team-feature { font-size: 11px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.5; }
+  .progress-bar-wrap { margin-top: 8px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-bottom: 4px; }
+  .progress-track { height: 4px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
+  .fill-complete { background: var(--text-success); }
+  .fill-partial  { background: var(--text-warning); }
+  .fill-pending  { background: var(--text-danger); }
+  .feature-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .feature-tag { font-size: 10px; padding: 2px 7px; border-radius: 4px; background: rgba(255,255,255,0.06); color: var(--text-muted); border: 0.5px solid var(--border); }
+  .feature-tag.done { background: var(--bg-success); color: var(--text-success); border-color: rgba(27,175,122,0.2); }
+  .feature-tag.wip  { background: var(--bg-warning); color: var(--text-warning); border-color: rgba(237,161,0,0.2); }
+  .feature-tag.todo { background: var(--bg-danger); color: var(--text-danger); border-color: rgba(226,75,74,0.2); }
+
+  /* Footer */
+  .footer { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 1rem; padding-top: 1rem; border-bottom: 0.5px solid var(--border); }
+
+  /* Last updated */
+  .last-updated { font-size: 11px; color: var(--text-muted); text-align: right; margin-bottom: 8px; }
+
+  @media (max-width: 800px) {
+    .kpi-row, .team-grid { grid-template-columns: 1fr 1fr; }
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="db">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon"><i class="ti ti-shield-bolt"></i></div>
+      <div>
+        <div class="logo-name">RiskLens AI</div>
+        <div class="logo-sub">Red Cross Research Foundation &nbsp;·&nbsp; prasad/backend &nbsp;·&nbsp; Week 3</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="api-indicator" id="api-indicator">Connecting to API...</span>
+      <span id="server-badge" class="offline-badge"><span class="dot" style="background:var(--text-warning)"></span>Checking...</span>
+    </div>
+  </div>
+
+  <div class="last-updated" id="last-updated">Last updated: --</div>
+
+  <!-- KPI Row -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label"><i class="ti ti-bug"></i> Total vulnerabilities</div>
+      <div class="kpi-val" id="kpi-total"><span class="kpi-loading">...</span></div>
+      <div class="kpi-delta" id="kpi-total-delta">Loading...</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label"><i class="ti ti-alert-triangle"></i> Critical / High</div>
+      <div class="kpi-val" id="kpi-crithigh"><span class="kpi-loading">...</span></div>
+      <div class="kpi-delta" id="kpi-crithigh-delta">Loading...</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label"><i class="ti ti-circle-check"></i> Compliance score</div>
+      <div class="kpi-val" id="kpi-compliance"><span class="kpi-loading">...</span></div>
+      <div class="kpi-delta" id="kpi-compliance-delta">Loading...</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label"><i class="ti ti-upload"></i> Files processed</div>
+      <div class="kpi-val" id="kpi-files"><span class="kpi-loading">...</span></div>
+      <div class="kpi-delta" id="kpi-files-delta">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Risk + Compliance -->
+  <div class="grid2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><i class="ti ti-chart-bar"></i> Top risk areas</div>
+        <span class="pill pill-err" id="risk-pill">Loading</span>
+      </div>
+      <div id="risk-bars">
+        <div style="color:var(--text-muted);font-size:12px;text-align:center;padding:20px 0">Loading risk data...</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><i class="ti ti-file-certificate"></i> Compliance status</div>
+        <span class="pill pill-warn">Shubham's RAG</span>
+      </div>
+      <div class="comp-grid">
+        <div class="comp-item"><div><div class="comp-name">ISO 27001</div><div class="comp-sub">18 controls</div></div><div class="comp-pct pct-pass" id="comp-iso">81%</div></div>
+        <div class="comp-item"><div><div class="comp-name">NIST CSF</div><div class="comp-sub">23 controls</div></div><div class="comp-pct pct-pass" id="comp-nist">76%</div></div>
+        <div class="comp-item"><div><div class="comp-name">GDPR</div><div class="comp-sub">11 articles</div></div><div class="comp-pct pct-warn" id="comp-gdpr">63%</div></div>
+        <div class="comp-item"><div><div class="comp-name">PCI-DSS</div><div class="comp-sub">12 requirements</div></div><div class="comp-pct pct-warn" id="comp-pci">58%</div></div>
+        <div class="comp-item"><div><div class="comp-name">CIS v8</div><div class="comp-sub">18 safeguards</div></div><div class="comp-pct pct-pass" id="comp-cis">79%</div></div>
+        <div class="comp-item"><div><div class="comp-name">HIPAA</div><div class="comp-sub">9 rules</div></div><div class="comp-pct pct-fail" id="comp-hipaa">44%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Uploads + Tickets + Auth -->
+  <div class="grid3">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><i class="ti ti-files"></i> Recent uploads</div>
+        <span class="pill pill-info">Juveriya</span>
+      </div>
+      <table class="upload-table">
+        <thead><tr><th>File</th><th>Type</th><th>Status</th></tr></thead>
+        <tbody id="upload-tbody">
+          <tr><td colspan="3" style="color:var(--text-muted);font-size:12px;text-align:center;padding:12px 0">No files yet — upload via API</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><i class="ti ti-ticket"></i> Open tickets</div>
+        <span class="pill pill-err">4 open</span>
+      </div>
+      <div class="ticket-item"><div class="ticket-id">#001</div><div class="ticket-text">Fix CVE-2024-1234 on prod server</div><span class="pill pill-err" style="font-size:10px">Critical</span></div>
+      <div class="ticket-item"><div class="ticket-id">#002</div><div class="ticket-text">GDPR data retention policy gap</div><span class="pill pill-warn" style="font-size:10px">High</span></div>
+      <div class="ticket-item"><div class="ticket-id">#003</div><div class="ticket-text">SSL cert renewal — 14 days left</div><span class="pill pill-warn" style="font-size:10px">Medium</span></div>
+      <div class="ticket-item"><div class="ticket-id">#004</div><div class="ticket-text">API rate limiting not configured</div><span class="pill pill-info" style="font-size:10px">Low</span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><i class="ti ti-lock"></i> Auth &amp; system</div>
+        <span class="pill pill-ok">JWT active</span>
+      </div>
+      <div class="auth-row">
+        <div class="auth-icon-wrap"><i class="ti ti-user-check"></i></div>
+        <div class="auth-detail"><div class="auth-name">Register endpoint</div><div class="auth-sub">/register</div></div>
+        <span class="pill pill-ok" style="font-size:10px">✓ Live</span>
+      </div>
+      <div class="auth-row">
+        <div class="auth-icon-wrap"><i class="ti ti-login"></i></div>
+        <div class="auth-detail"><div class="auth-name">Login endpoint</div><div class="auth-sub">/login</div></div>
+        <span class="pill pill-ok" style="font-size:10px">✓ Live</span>
+      </div>
+      <div class="auth-row">
+        <div class="auth-icon-wrap"><i class="ti ti-database"></i></div>
+        <div class="auth-detail"><div class="auth-name">PostgreSQL</div><div class="auth-sub">database.py</div></div>
+        <span class="pill pill-ok" style="font-size:10px">✓ On</span>
+      </div>
+      <div class="auth-row">
+        <div class="auth-icon-wrap"><i class="ti ti-api"></i></div>
+        <div class="auth-detail"><div class="auth-name">FastAPI server</div><div class="auth-sub">uvicorn · port 8000</div></div>
+        <span class="pill" id="fastapi-pill" style="font-size:10px">Checking</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Team Progress Section -->
+  <div class="section-title"><i class="ti ti-users" style="font-size:16px"></i> Team Progress — Week 3</div>
+  <div class="team-grid">
+
+    <!-- Prasad -->
+    <div class="team-card complete">
+      <div class="team-member-name">Prasad <span style="font-size:10px;color:var(--text-muted)">(You · Lead)</span></div>
+      <div class="team-member-role">Backend + Auth Lead</div>
+      <div class="team-feature">FastAPI server, JWT Auth, PostgreSQL, File Upload APIs, Dashboard</div>
+      <div class="feature-tags">
+        <span class="feature-tag done">Auth ✓</span>
+        <span class="feature-tag done">Upload ✓</span>
+        <span class="feature-tag done">Dashboard ✓</span>
+        <span class="feature-tag done">DB ✓</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Progress</span><span style="color:var(--text-success)">100%</span></div>
+        <div class="progress-track"><div class="progress-fill fill-complete" style="width:100%"></div></div>
+      </div>
+    </div>
+
+    <!-- Juveriya -->
+    <div class="team-card complete">
+      <div class="team-member-name">Juveriya</div>
+      <div class="team-member-role">File Upload &amp; Parsing</div>
+      <div class="team-feature">CSV/XLSX/PDF upload endpoints + Vulnerability parser working</div>
+      <div class="feature-tags">
+        <span class="feature-tag done">CSV Parser ✓</span>
+        <span class="feature-tag done">XLSX Parser ✓</span>
+        <span class="feature-tag wip">PDF Testing</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Progress</span><span style="color:var(--text-success)">90%</span></div>
+        <div class="progress-track"><div class="progress-fill fill-complete" style="width:90%"></div></div>
+      </div>
+    </div>
+
+    <!-- Abhiya -->
+    <div class="team-card complete">
+      <div class="team-member-name">Abhiya</div>
+      <div class="team-member-role">AI Risk Analysis</div>
+      <div class="team-feature">Ollama LLM — Risk Title, Business Impact, Likelihood, Risk Rating, Remediation</div>
+      <div class="feature-tags">
+        <span class="feature-tag done">Ollama ✓</span>
+        <span class="feature-tag done">Risk Score ✓</span>
+        <span class="feature-tag done">Remediation ✓</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Progress</span><span style="color:var(--text-success)">100%</span></div>
+        <div class="progress-track"><div class="progress-fill fill-complete" style="width:100%"></div></div>
+      </div>
+    </div>
+
+    <!-- Shubham -->
+    <div class="team-card partial">
+      <div class="team-member-name">Shubham</div>
+      <div class="team-member-role">Compliance &amp; RAG</div>
+      <div class="team-feature">GitHub setup done. Compliance feature (ISO/NIST/GDPR checker) pending — Saturday deadline</div>
+      <div class="feature-tags">
+        <span class="feature-tag done">GitHub ✓</span>
+        <span class="feature-tag done">DB Setup ✓</span>
+        <span class="feature-tag todo">RAG Module</span>
+        <span class="feature-tag todo">Compliance %</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Progress</span><span style="color:var(--text-warning)">20%</span></div>
+        <div class="progress-track"><div class="progress-fill fill-partial" style="width:20%"></div></div>
+      </div>
+    </div>
+
+    <!-- Tansheeka -->
+    <div class="team-card partial">
+      <div class="team-member-name">Tansheeka</div>
+      <div class="team-member-role">Frontend (React)</div>
+      <div class="team-feature">Vite + React setup done. ShadCN installed. App Shell + Routing + GitHub push pending</div>
+      <div class="feature-tags">
+        <span class="feature-tag done">Vite ✓</span>
+        <span class="feature-tag done">React ✓</span>
+        <span class="feature-tag done">ShadCN ✓</span>
+        <span class="feature-tag todo">App Shell</span>
+        <span class="feature-tag todo">GitHub Push</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Progress</span><span style="color:var(--text-warning)">30%</span></div>
+        <div class="progress-track"><div class="progress-fill fill-partial" style="width:30%"></div></div>
+      </div>
+    </div>
+
+    <!-- Kumud -->
+    <div class="team-card pending">
+      <div class="team-member-name">Kumud</div>
+      <div class="team-member-role">Ticketing &amp; Testing</div>
+      <div class="team-feature">Assigned: Ticket tracking module + API endpoint testing. No update received yet.</div>
+      <div class="feature-tags">
+        <span class="feature-tag todo">Ticket Module</span>
+        <span class="feature-tag todo">API Testing</span>
+        <span class="feature-tag todo">GitHub Push</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-label"><span>Progress</span><span style="color:var(--text-danger)">0%</span></div>
+        <div class="progress-track"><div class="progress-fill fill-pending" style="width:0%"></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    RiskLens AI &nbsp;·&nbsp; Red Cross Research Foundation &nbsp;·&nbsp; Branch: prasad/backend &nbsp;·&nbsp; Auto-refreshes every 10s
+  </div>
+
+</div>
+
+<script>
+const API = "http://localhost:8000";
+
+const RISK_AREAS = [
+  { name: "Unpatched CVEs (Network)", score: 9.2, cls: "c-crit", color: "#e24b4a" },
+  { name: "Weak auth policies",        score: 8.7, cls: "c-crit", color: "#e24b4a" },
+  { name: "Exposed API endpoints",     score: 7.4, cls: "c-high", color: "#eda100" },
+  { name: "Outdated SSL certs",        score: 6.1, cls: "c-high", color: "#eda100" },
+  { name: "Misconfigured firewall",    score: 4.3, cls: "c-med",  color: "#3987e5" },
+  { name: "Logging gaps",              score: 2.8, cls: "c-low",  color: "#1baf7a" },
+];
+
+function renderRiskBars(critical, high, medium, low) {
+  const total = critical + high + medium + low || 0;
+  document.getElementById("risk-pill").textContent = critical + " critical";
+  document.getElementById("risk-bars").innerHTML = RISK_AREAS.map(r => `
+    <div class="risk-item">
+      <div class="risk-row">
+        <span class="risk-name">${r.name}</span>
+        <span class="risk-score" style="color:${r.color}">${r.score}</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill ${r.cls}" style="width:${r.score*10}%"></div></div>
+    </div>
+  `).join("");
+}
+
+function renderUploads(files) {
+  const tbody = document.getElementById("upload-tbody");
+  if (!files || files.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" style="color:var(--text-muted);font-size:12px;text-align:center;padding:12px 0">No files uploaded yet</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = files.map(f => `
+    <tr>
+      <td><i class="ti ti-file-spreadsheet" style="margin-right:5px;vertical-align:-1px;color:${f.type==='CSV'?'#1baf7a':f.type==='PDF'?'#e24b4a':'#3987e5'}"></i>${f.name}</td>
+      <td>${f.type}</td>
+      <td><span class="pill ${f.status==='Parsed'?'pill-ok':'pill-warn'}" style="font-size:10px">${f.status}</span></td>
+    </tr>
+  `).join("");
+}
+
+function updateCompliance(comp) {
+  const map = { "ISO 27001": "comp-iso", "NIST CSF": "comp-nist", "GDPR": "comp-gdpr", "PCI-DSS": "comp-pci", "CIS v8": "comp-cis", "HIPAA": "comp-hipaa" };
+  for (const [key, id] of Object.entries(map)) {
+    const el = document.getElementById(id);
+    if (el && comp && comp[key] !== undefined) {
+      const v = comp[key];
+      el.textContent = v + "%";
+      el.className = "comp-pct " + (v >= 75 ? "pct-pass" : v >= 55 ? "pct-warn" : "pct-fail");
+    }
+  }
+}
+
+async function loadStats() {
+  try {
+    const res = await fetch(`${API}/api/stats`, { signal: AbortSignal.timeout(3000) });
+    if (!res.ok) throw new Error("Bad response");
+    const d = await res.json();
+
+    // Server online
+    document.getElementById("server-badge").className = "status-badge";
+    document.getElementById("server-badge").innerHTML = '<span class="dot"></span>Server live · port 8000';
+    document.getElementById("api-indicator").textContent = "✓ API connected";
+    document.getElementById("api-indicator").style.color = "var(--text-success)";
+    document.getElementById("fastapi-pill").className = "pill pill-ok";
+    document.getElementById("fastapi-pill").textContent = "✓ Running";
+
+    // KPIs
+    document.getElementById("kpi-total").textContent = d.total_vulnerabilities;
+    document.getElementById("kpi-total-delta").textContent = "From uploaded files";
+    document.getElementById("kpi-crithigh").textContent = (d.critical || 0) + (d.high || 0);
+    document.getElementById("kpi-crithigh-delta").textContent = `${d.critical||0} critical · ${d.high||0} high`;
+    const avgComp = d.compliance ? Math.round(Object.values(d.compliance).reduce((a,b)=>a+b,0)/Object.values(d.compliance).length) : 74;
+    document.getElementById("kpi-compliance").textContent = avgComp + "%";
+    document.getElementById("kpi-compliance-delta").textContent = "Avg across 6 frameworks";
+    document.getElementById("kpi-files").textContent = d.files_processed || 0;
+    document.getElementById("kpi-files-delta").textContent = "CSV · XLSX · PDF";
+
+    // Risk bars
+    renderRiskBars(d.critical||0, d.high||0, d.medium||0, d.low||0);
+
+    // Compliance
+    if (d.compliance) updateCompliance(d.compliance);
+
+    // Uploads
+    if (d.uploaded_files) renderUploads(d.uploaded_files);
+
+    // Last updated
+    document.getElementById("last-updated").textContent = "Last updated: " + new Date().toLocaleTimeString();
+
+  } catch(e) {
+    // Server offline — show dummy data
+    document.getElementById("server-badge").className = "offline-badge";
+    document.getElementById("server-badge").innerHTML = '<span class="dot" style="background:var(--text-warning)"></span>API offline — dummy data';
+    document.getElementById("api-indicator").textContent = "⚠ Run: uvicorn main:app --reload";
+    document.getElementById("api-indicator").style.color = "var(--text-warning)";
+    document.getElementById("fastapi-pill").className = "pill pill-warn";
+    document.getElementById("fastapi-pill").textContent = "⚠ Offline";
+
+    // Dummy KPIs
+    document.getElementById("kpi-total").textContent = "142";
+    document.getElementById("kpi-total-delta").textContent = "Sample data";
+    document.getElementById("kpi-crithigh").textContent = "27";
+    document.getElementById("kpi-crithigh-delta").textContent = "12 critical · 15 high";
+    document.getElementById("kpi-compliance").textContent = "74%";
+    document.getElementById("kpi-compliance-delta").textContent = "Avg across 6 frameworks";
+    document.getElementById("kpi-files").textContent = "38";
+    document.getElementById("kpi-files-delta").textContent = "CSV · XLSX · PDF";
+
+    renderRiskBars(12, 15, 8, 5);
+
+    document.getElementById("upload-tbody").innerHTML = `
+      <tr><td><i class="ti ti-file-spreadsheet" style="margin-right:5px;vertical-align:-1px;color:#1baf7a"></i>scan_q3.csv</td><td>CSV</td><td><span class="pill pill-ok" style="font-size:10px">Parsed</span></td></tr>
+      <tr><td><i class="ti ti-file-spreadsheet" style="margin-right:5px;vertical-align:-1px;color:#3987e5"></i>vuln_oct.xlsx</td><td>XLSX</td><td><span class="pill pill-ok" style="font-size:10px">Parsed</span></td></tr>
+      <tr><td><i class="ti ti-file-type-pdf" style="margin-right:5px;vertical-align:-1px;color:#e24b4a"></i>pentest_rpt.pdf</td><td>PDF</td><td><span class="pill pill-warn" style="font-size:10px">Testing</span></td></tr>
+    `;
+    document.getElementById("last-updated").textContent = "Last updated: " + new Date().toLocaleTimeString() + " (offline mode)";
+  }
+}
+
+loadStats();
+setInterval(loadStats, 10000);
+</script>
+</body>
+</html>
