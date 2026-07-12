@@ -3,6 +3,7 @@ from fastapi import Header
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database import Base, engine, get_db
+from db_models import User, Vulnerability
 from auth import hash_password, verify_password, create_access_token
 from upload import router as upload_router, parsed_vulnerabilities as upload_vulnerabilities
 from fastapi.staticfiles import StaticFiles
@@ -27,7 +28,6 @@ class UserLogin(BaseModel):
     username: str
     password: str
 
-users_db = {}
 uploaded_files_log = []
 
 COMPLIANCE_DATA = {
@@ -44,35 +44,41 @@ def root():
     return {"message": "RiskLens AI is running"}
 
 @app.post("/register")
-def register(user: UserRegister):
-    if user.username in users_db:
+def register(user: UserRegister, db: Session = Depends(get_db)):
+    existing = db.query(User).filter(User.username == user.username).first()
+    if existing:
         raise HTTPException(status_code=400, detail="User already exists")
     if user.role not in ["admin", "analyst", "viewer"]:
         raise HTTPException(status_code=400, detail="Invalid role")
-    users_db[user.username] = {
-        "password": hash_password(user.password),
-        "role": user.role
-    }
+    new_user = User(
+        username=user.username,
+        password=hash_password(user.password),
+        role=user.role
+    )
+    db.add(new_user)
+    db.commit()
     return {"message": "User registered successfully", "role": user.role}
 
 @app.post("/login")
-def login(user: UserLogin):
-    if user.username not in users_db:
+def login(user: UserLogin, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.username == user.username).first()
+    if not db_user:
         raise HTTPException(status_code=400, detail="User not found")
-    if not verify_password(user.password, users_db[user.username]["password"]):
+    if not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=400, detail="Incorrect password")
     token = create_access_token({
-        "sub": user.username,
-        "role": users_db[user.username]["role"]
+        "sub": db_user.username,
+        "role": db_user.role
     })
-    return {"access_token": token, "token_type": "bearer", "role": users_db[user.username]["role"]}
+    return {"access_token": token, "token_type": "bearer", "role": db_user.role}
 
 @app.get("/admin/users")
-def get_users(token: str):
+def get_users(token: str, db: Session = Depends(get_db)):
     role = get_role_from_token(token)
     if role != "admin":
         raise HTTPException(status_code=403, detail="Access denied")
-    return {"users": list(users_db.keys())}
+    users = db.query(User).all()
+    return {"users": [u.username for u in users]}
 
 @app.get("/analyst/vulnerabilities")
 def get_vulnerabilities(token: str):
