@@ -3,10 +3,10 @@ import os
 import pandas as pd
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pypdf import PdfReader
-from ai_analyzer import analyze_vulnerability
+from ai_service import generate_risk_analysis
+from models import VulnerabilityModel
 
 router = APIRouter()
-
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -20,23 +20,22 @@ async def upload_csv(file: UploadFile = File(...)):
     file_path = f"{UPLOAD_DIR}/{file.filename}"
     with open(file_path, "wb") as f:
         f.write(await file.read())
+
     vulnerabilities = parse_csv(file_path)
 
+    analyzed_vulnerabilities = []
     for vuln in vulnerabilities:
-        ai_result = analyze_vulnerability(
-            title=vuln["title"],
-            severity=vuln["severity"],
-            description=vuln["description"]
-        )
-        vuln["ai_analysis"] = ai_result["ai_analysis"]
+        vuln_model = VulnerabilityModel(**vuln)
+        ai_result = generate_risk_analysis(vuln_model)
+        analyzed_vulnerabilities.append(ai_result)
 
-    parsed_vulnerabilities.extend(vulnerabilities)
+    parsed_vulnerabilities.extend(analyzed_vulnerabilities)
     uploaded_files_log.append({"name": file.filename, "type": "CSV", "status": "Parsed"})
 
     return {
         "message": "CSV uploaded and AI analyzed",
-        "total": len(vulnerabilities),
-        "data": vulnerabilities
+        "total": len(analyzed_vulnerabilities),
+        "data": analyzed_vulnerabilities
     }
 
 @router.post("/upload/xlsx")
