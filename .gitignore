@@ -1,4 +1,8 @@
+venv/
+venv_new/
+ven/
 __pycache__/
 *.pyc
-venv/
-.pytest_cache/
+.env
+uploads/
+reports/*.pdf
