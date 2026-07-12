@@ -18,33 +18,42 @@ def dashboard(db: Session = Depends(get_db)):
     tickets = get_all_tickets(db)
 
     total = len(tickets)
-
     open_count = sum(1 for t in tickets if t.status == "Open")
     progress_count = sum(1 for t in tickets if t.status == "In Progress")
     closed_count = sum(1 for t in tickets if t.status == "Closed")
+    high_count = sum(1 for t in tickets if t.priority == "High")
 
     percent = 0
     if total > 0:
         percent = int((closed_count / total) * 100)
 
     today = datetime.now().strftime("%d %B %Y")
-
+    current_time = datetime.now().strftime("%d %B %Y %I:%M %p")
     table_rows = ""
 
-    for ticket in tickets:
-        table_rows += f"""
+    if total == 0:
+        table_rows = """
         <tr>
-            <td>{ticket.ticket_id}</td>
-            <td>{ticket.vulnerability_id}</td>
-            <td>{ticket.assigned_to}</td>
-            <td>{ticket.status}</td>
-            <td>{ticket.priority}</td>
-            <td>{ticket.due_date}</td>
+            <td colspan="6">No Tickets Available</td>
         </tr>
         """
 
-    return f"""
+    if total > 0:
+        for ticket in tickets:
+            table_rows += f"""
+            <tr>
+                <td>{ticket.ticket_id}</td>
+                <td>{ticket.vulnerability_id}</td>
+                <td>{ticket.assigned_to}</td>
+                <td>{ticket.status}</td>
+                <td>{ticket.priority}</td>
+                <td>{ticket.due_date}</td>
+            </tr>
+            """
+
+        return f"""
 <!DOCTYPE html>
+
 <html>
 
 <head>
@@ -59,18 +68,14 @@ body{{
     margin:40px;
 }}
 
-.header{{
-    background:#1f4e79;
-    color:white;
-    padding:20px;
-    border-radius:10px;
-    margin-bottom:30px;
+h1{{
+    color:#1f4e79;
 }}
 
 .cards{{
     display:flex;
     gap:20px;
-    margin-top:20px;
+    margin-top:30px;
 }}
 
 .card{{
@@ -79,24 +84,12 @@ body{{
     border-radius:10px;
     color:white;
     text-align:center;
-    box-shadow:0px 2px 10px gray;
 }}
 
-.blue{{
-    background:#007bff;
-}}
-
-.red{{
-    background:#dc3545;
-}}
-
-.orange{{
-    background:#fd7e14;
-}}
-
-.green{{
-    background:#28a745;
-}}
+.blue{{background:#007bff;}}
+.red{{background:#dc3545;}}
+.orange{{background:#fd7e14;}}
+.green{{background:#28a745;}}
 
 .progress-container{{
     width:100%;
@@ -112,17 +105,6 @@ body{{
     text-align:center;
     padding:10px;
     border-radius:20px;
-}}
-
-.btn{{
-    display:inline-block;
-    margin-top:30px;
-    padding:12px 20px;
-    background:#1f4e79;
-    color:white;
-    text-decoration:none;
-    border-radius:8px;
-    font-weight:bold;
 }}
 
 table{{
@@ -143,10 +125,18 @@ th{{
     color:white;
 }}
 
-.footer{{
-    text-align:center;
-    margin-top:50px;
-    color:gray;
+tr:nth-child(even){{
+    background:#f2f2f2;
+}}
+
+.btn{{
+    display:inline-block;
+    margin-top:30px;
+    padding:12px 20px;
+    background:#1f4e79;
+    color:white;
+    text-decoration:none;
+    border-radius:8px;
 }}
 
 </style>
@@ -155,15 +145,14 @@ th{{
 
 <body>
 
-<div class="header">
+<h1>🛡 RiskLens AI Dashboard</h1>
+<h3>Welcome to RiskLens AI</h3>
 
-<h1>RiskLens AI</h1>
+<p>
+Monitor vulnerabilities, track remediation progress, and manage security tickets from one dashboard.
+</p>
 
-<h3>Remediation Progress Dashboard</h3>
-
-<p><b>Date:</b> {today}</p>
-
-</div>
+<p><b>Last Updated:</b> {current_time}</p>
 
 <div class="cards">
 
@@ -187,59 +176,41 @@ th{{
 <p>Closed</p>
 </div>
 
+<div class="card red">
+    <h2>{high_count}</h2>
+    <p>High Priority</p>
 </div>
 
-<h2 style="margin-top:40px;">Overall Remediation Progress</h2>
+</div>
+
+<h2>Overall Progress</h2>
 
 <div class="progress-container">
-
 <div class="progress-bar">
-
 {percent}%
-
 </div>
-
 </div>
 
 <a class="btn" href="/report/pdf">
-
 📄 Download Risk Report PDF
-
 </a>
 
-<h2 style="margin-top:40px;">Ticket Details</h2>
+<h2>Ticket Details</h2>
 
 <table>
 
 <tr>
-
 <th>Ticket ID</th>
-
 <th>Vulnerability ID</th>
-
 <th>Assigned To</th>
-
 <th>Status</th>
-
 <th>Priority</th>
-
 <th>Due Date</th>
-
 </tr>
 
 {table_rows}
 
 </table>
-
-<div class="footer">
-
-<hr>
-
-<p>
-© 2026 RiskLens AI | Cybersecurity Internship Project
-</p>
-
-</div>
 
 </body>
 
