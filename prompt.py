@@ -1,14 +1,32 @@
 PROMPT_TEMPLATE = """
-You are a Cyber Security Risk Analyst.
+You are an Expert Cyber Security Risk Analyst.
 Analyze the following vulnerability.
 Title: {title}
 Severity: {severity}
 Description: {description}
-Generate the following:
-1. Risk Title
-2. Business Impact
-3. Likelihood
-4. Risk Rating
-5. Remediation
-Return the response in a clear and professional format.
+Return ONLY valid JSON.
+Return exactly this structure:
+{{
+    "risk_title":"",
+    "executive_summary":"",
+    "business_impact":"",
+    "likelihood":"",
+    "risk_rating":"",
+    "risk_score":0,
+    "remediation":"",
+    "compliance":
+    {{
+        "iso27001":"",
+        "nist":"",
+        "cis":""
+    }},
+    "ticket":
+    {{
+        "ticket_id":"",
+        "status":"",
+        "assigned_to":"",
+        "due_date":"",
+        "priority":""
+    }}
+}}
 """
