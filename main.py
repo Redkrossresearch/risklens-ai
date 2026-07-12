@@ -4,14 +4,13 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database import Base, engine, get_db
 from auth import hash_password, verify_password, create_access_token
-from upload import router as upload_router
+from upload import router as upload_router, parsed_vulnerabilities as upload_vulnerabilities
 from fastapi.staticfiles import StaticFiles
 from ticketing.routes import router as ticketing_router
 from ticketing.models import Ticket
 from report_generator import generate_executive_report, generate_technical_report
 from auth import get_role_from_token
 
-# Database tables create
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="RiskLens AI")
@@ -29,7 +28,6 @@ class UserLogin(BaseModel):
     password: str
 
 users_db = {}
-parsed_vulnerabilities = []
 uploaded_files_log = []
 
 COMPLIANCE_DATA = {
@@ -81,30 +79,22 @@ def get_vulnerabilities(token: str):
     role = get_role_from_token(token)
     if role not in ["admin", "analyst"]:
         raise HTTPException(status_code=403, detail="Access denied")
-    return {"vulnerabilities": parsed_vulnerabilities}
+    return {"vulnerabilities": upload_vulnerabilities}
 
 @app.get("/api/stats")
 def get_stats():
-    total = len(parsed_vulnerabilities)
-    critical = sum(1 for v in parsed_vulnerabilities if v.get("severity","").lower() == "critical")
-    high = sum(1 for v in parsed_vulnerabilities if v.get("severity","").lower() == "high")
-    medium = sum(1 for v in parsed_vulnerabilities if v.get("severity","").lower() == "medium")
-    low = sum(1 for v in parsed_vulnerabilities if v.get("severity","").lower() == "low")
+    total = len(upload_vulnerabilities)
+    critical = sum(1 for v in upload_vulnerabilities if v.get("severity","").lower() == "critical")
+    high = sum(1 for v in upload_vulnerabilities if v.get("severity","").lower() == "high")
+    medium = sum(1 for v in upload_vulnerabilities if v.get("severity","").lower() == "medium")
+    low = sum(1 for v in upload_vulnerabilities if v.get("severity","").lower() == "low")
     return {
         "total_vulnerabilities": total,
         "critical": critical,
         "high": high,
         "medium": medium,
         "low": low,
-        "files_processed": len(uploaded_files_log),
-        "uploaded_files": uploaded_files_log[-4:],
         "compliance": COMPLIANCE_DATA,
-        "tickets": [
-            {"id": "#001", "text": "Fix CVE-2024-1234 on prod server", "severity": "Critical"},
-            {"id": "#002", "text": "GDPR data retention policy gap", "severity": "High"},
-            {"id": "#003", "text": "SSL cert renewal — 14 days left", "severity": "Medium"},
-            {"id": "#004", "text": "API rate limiting not configured", "severity": "Low"},
-        ]
     }
 
 @app.post("/analyze")
@@ -124,10 +114,10 @@ def analyze(token: str, vulnerability_id: str, title: str, severity: str, descri
 
 @app.get("/report/executive")
 def executive_report():
-    path = generate_executive_report(parsed_vulnerabilities, COMPLIANCE_DATA)
+    path = generate_executive_report(upload_vulnerabilities, COMPLIANCE_DATA)
     return {"message": "Executive report generated", "path": path}
 
 @app.get("/report/technical")
 def technical_report():
-    path = generate_technical_report(parsed_vulnerabilities, COMPLIANCE_DATA)
+    path = generate_technical_report(upload_vulnerabilities, COMPLIANCE_DATA)
     return {"message": "Technical report generated", "path": path}
