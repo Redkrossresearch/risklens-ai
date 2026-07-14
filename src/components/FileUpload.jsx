@@ -20,7 +20,8 @@ function FileUpload() {
 
     try {
       // Replace this URL with your teammate's backend URL
-      const response = await fetch("http://localhost:8000/api/upload",  {
+      const response = await fetch("http://localhost:8000/api/upload", 
+         {
         method: "POST",
         body: formData,
       });
