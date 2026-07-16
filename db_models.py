@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Text
+from sqlalchemy import Column, String, Integer, Text, JSON
 from database import Base
 
 class User(Base):
@@ -24,3 +24,5 @@ class Vulnerability(Base):
     risk_rating = Column(String, nullable=True)
     risk_score = Column(Integer, nullable=True)
     remediation = Column(Text, nullable=True)
+    compliance = Column(JSON, nullable=True)
+    ticket = Column(JSON, nullable=True)
