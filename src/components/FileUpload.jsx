@@ -1,68 +1,70 @@
  import { useState } from "react";
 
 function FileUpload() {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [message, setMessage] = useState("");
-
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]);
-    setMessage("");
-  };
+  const [file, setFile] = useState(null);
 
   const handleUpload = async () => {
-    if (!selectedFile) {
-      setMessage("Please select a file first.");
+    if (!file) {
+      alert("Please select a file");
+      return;
+    }
+
+    let uploadUrl = "";
+
+    const extension = file.name.split(".").pop().toLowerCase();
+
+    if (extension === "pdf") {
+      uploadUrl = "http://127.0.0.1:8000/upload/pdf";
+    } else if (extension === "csv") {
+      uploadUrl = "http://127.0.0.1:8000/upload/csv";
+    } else if (extension === "xlsx") {
+      uploadUrl = "http://127.0.0.1:8000/upload/xlsx";
+    } else {
+      alert("Only PDF, CSV and XLSX files are supported.");
       return;
     }
 
     const formData = new FormData();
-    formData.append("file", selectedFile);
+    formData.append("file", file);
 
     try {
-      // Replace this URL with your teammate's backend URL
-      const response = await fetch("http://localhost:8000/api/upload", 
-         {
+      const response = await fetch(uploadUrl, {
         method: "POST",
         body: formData,
       });
 
+      const result = await response.json();
+
+      console.log(result);
+
       if (response.ok) {
-        setMessage("✅ File uploaded successfully!");
+        alert("File uploaded successfully!");
       } else {
-        setMessage("❌ Upload failed.");
+        alert("Upload failed");
       }
     } catch (error) {
       console.error(error);
-      setMessage("❌ Cannot connect to backend.");
+      alert("Backend connection failed");
     }
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md max-w-lg">
-      <h2 className="text-3xl font-bold mb-6">
+    <div className="bg-white p-6 rounded-lg shadow w-96">
+      <h2 className="text-2xl font-bold mb-4">
         Upload File
       </h2>
 
-      <div className="flex items-center gap-4">
-        <input
-          type="file"
-          onChange={handleFileChange}
-          className="border p-2 rounded"
-        />
+      <input
+        type="file"
+        onChange={(e) => setFile(e.target.files[0])}
+      />
 
-        <button
-          onClick={handleUpload}
-          className="bg-blue-600 text-white px-5 py-2 rounded hover:bg-blue-700"
-        >
-          Upload
-        </button>
-      </div>
-
-      {message && (
-        <p className="mt-4 font-medium">
-          {message}
-        </p>
-      )}
+      <button
+        onClick={handleUpload}
+        className="bg-blue-600 text-white px-4 py-2 rounded mt-4"
+      >
+        Upload
+      </button>
     </div>
   );
 }
