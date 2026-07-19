@@ -12,11 +12,11 @@ def parse_csv(file_path: str):
     for _, row in df.iterrows():
         vuln = VulnerabilityModel(
             vulnerability_id=str(uuid.uuid4()),
-            title=str(row.get('title', row.get('name', 'Unknown'))),
-            cve=str(row.get('cve', 'N/A')),
-            severity=str(row.get('severity', 'Unknown')),
-            host=str(row.get('host', 'Unknown')),
-            description=str(row.get('description', 'N/A')),
+            title=str(row.get('title', row.get('name', 'Unknown'))).strip(),
+            cve=str(row.get('cve', 'N/A')).strip(),
+            severity=str(row.get('severity', 'Unknown')).strip(),
+            host=str(row.get('host', 'Unknown')).strip(),
+            description=str(row.get('description', 'N/A')).strip(),
         )
         vulnerabilities.append(vuln.model_dump())
     return vulnerabilities
@@ -28,11 +28,11 @@ def parse_xlsx(file_path: str):
     for _, row in df.iterrows():
         vuln = VulnerabilityModel(
             vulnerability_id=str(uuid.uuid4()),
-            title=str(row.get('title', 'Unknown')),
-            cve=str(row.get('cve', 'N/A')),
-            severity=str(row.get('severity', 'Unknown')),
-            host=str(row.get('host', 'Unknown')),
-            description=str(row.get('description', 'N/A')),
+            title=str(row.get('title', 'Unknown')).strip(),
+            cve=str(row.get('cve', 'N/A')).strip(),
+            severity=str(row.get('severity', 'Unknown')).strip(),
+            host=str(row.get('host', 'Unknown')).strip(),
+            description=str(row.get('description', 'N/A')).strip(),
         )
         vulnerabilities.append(vuln.model_dump())
     return vulnerabilities
