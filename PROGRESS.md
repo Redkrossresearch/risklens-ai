@@ -15,6 +15,7 @@
 - Confirmed only ONE upload.py exists (deleted stray duplicate outside project folder)
 - Shubham's compliance/RAG module merged (api.py, ingest.py, rag_pipeline.py, risklens_db.py, compliance_report.py)
 - Resolved merge conflicts: separated report_generator.py (PDF reports) from compliance_report.py (RAG compliance mapping)
+- Abhiya's improved AI prompt rules merged (risk_rating validation, compliance control code format, "Not mapped" fallback)
 
 ## ⏳ In Progress / Needs Verification
 - Confirm only ONE upload.py exists (earlier note mentioned 2 files — need to verify)
