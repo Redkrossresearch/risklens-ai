@@ -9,7 +9,6 @@ from typing import List, Dict
 import json
 import os
 
-# ─── Styles ───────────────────────────────────────────────
 def get_styles():
     styles = getSampleStyleSheet()
     return {
@@ -31,7 +30,6 @@ def get_styles():
             textColor=colors.HexColor('#777777'), alignment=TA_CENTER),
     }
 
-# ─── Executive Report ─────────────────────────────────────
 def generate_executive_report(vulnerabilities: list, compliance: dict, output_path: str = "reports/executive_report.pdf"):
     os.makedirs("reports", exist_ok=True)
     doc = SimpleDocTemplate(output_path, pagesize=A4,
@@ -40,7 +38,6 @@ def generate_executive_report(vulnerabilities: list, compliance: dict, output_pa
     s = get_styles()
     story = []
 
-    # Cover
     story.append(Spacer(1, 1*cm))
     story.append(Paragraph("RiskLens AI", s["title"]))
     story.append(Paragraph("Executive Risk Report", s["subtitle"]))
@@ -49,7 +46,6 @@ def generate_executive_report(vulnerabilities: list, compliance: dict, output_pa
     story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#c0392b')))
     story.append(Spacer(1, 0.5*cm))
 
-    # Executive Summary
     story.append(Paragraph("1. Executive Summary", s["section"]))
     total = len(vulnerabilities)
     critical = sum(1 for v in vulnerabilities if v.get("severity","").lower() == "critical")
@@ -62,16 +58,15 @@ def generate_executive_report(vulnerabilities: list, compliance: dict, output_pa
         f"A total of <b>{total}</b> vulnerabilities were identified, of which <b>{critical}</b> are critical and "
         f"<b>{high}</b> are high severity, requiring immediate attention.", s["body"]))
 
-    # Risk Overview Table
     story.append(Spacer(1, 0.3*cm))
     story.append(Paragraph("2. Risk Overview", s["section"]))
     risk_data = [
         ["Severity", "Count", "Action Required"],
-        ["Critical", str(critical), "Immediate — within 24 hours"],
-        ["High",     str(high),     "Urgent — within 7 days"],
-        ["Medium",   str(medium),   "Planned — within 30 days"],
-        ["Low",      str(low),      "Monitor — within 90 days"],
-        ["Total",    str(total),    "—"],
+        ["Critical", str(critical), "Immediate - within 24 hours"],
+        ["High",     str(high),     "Urgent - within 7 days"],
+        ["Medium",   str(medium),   "Planned - within 30 days"],
+        ["Low",      str(low),      "Monitor - within 90 days"],
+        ["Total",    str(total),    "-"],
     ]
     risk_table = Table(risk_data, colWidths=[4*cm, 3*cm, 9*cm])
     risk_table.setStyle(TableStyle([
@@ -91,7 +86,6 @@ def generate_executive_report(vulnerabilities: list, compliance: dict, output_pa
     ]))
     story.append(risk_table)
 
-    # Compliance Score
     story.append(Spacer(1, 0.3*cm))
     story.append(Paragraph("3. Compliance Score", s["section"]))
     comp_data = [["Framework", "Score", "Status"]]
@@ -114,9 +108,8 @@ def generate_executive_report(vulnerabilities: list, compliance: dict, output_pa
     ]))
     story.append(comp_table)
 
-    # Top 5 Risks
     story.append(Spacer(1, 0.3*cm))
-    story.append(Paragraph("4. Top 5 Risks — Business Impact", s["section"]))
+    story.append(Paragraph("4. Top 5 Risks - Business Impact", s["section"]))
     top5 = sorted(vulnerabilities, key=lambda x: x.get("severity","").lower() == "critical", reverse=True)[:5]
     for i, v in enumerate(top5, 1):
         story.append(Paragraph(f"<b>{i}. {v.get('title', 'Unknown')}</b>", s["subsection"]))
@@ -124,20 +117,18 @@ def generate_executive_report(vulnerabilities: list, compliance: dict, output_pa
         if v.get("business_impact"):
             story.append(Paragraph(f"Business Impact: {v.get('business_impact')}", s["body"]))
 
-    # Recommendations
     story.append(Spacer(1, 0.3*cm))
     story.append(Paragraph("5. Recommendations", s["section"]))
     recommendations = [
         "Immediately patch all Critical vulnerabilities identified in this report.",
         "Enforce strong password policies across all systems.",
         "Review and update SSL certificates before expiry.",
-        "Conduct regular vulnerability scans — minimum monthly.",
-        "Achieve GDPR and PCI-DSS compliance — currently below threshold.",
+        "Conduct regular vulnerability scans - minimum monthly.",
+        "Achieve GDPR and PCI-DSS compliance - currently below threshold.",
     ]
     for rec in recommendations:
-        story.append(Paragraph(f"→  {rec}", s["bullet_done"]))
+        story.append(Paragraph(f"-  {rec}", s["bullet_done"]))
 
-    # Footer
     story.append(Spacer(1, 0.5*cm))
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#cccccc')))
     story.append(Paragraph("RiskLens AI  |  Executive Report  |  Red Cross Research Foundation  |  Confidential", s["small"]))
@@ -146,7 +137,6 @@ def generate_executive_report(vulnerabilities: list, compliance: dict, output_pa
     return output_path
 
 
-# ─── Technical Report ─────────────────────────────────────
 def generate_technical_report(vulnerabilities: list, compliance: dict, output_path: str = "reports/technical_report.pdf"):
     os.makedirs("reports", exist_ok=True)
     doc = SimpleDocTemplate(output_path, pagesize=A4,
@@ -155,7 +145,6 @@ def generate_technical_report(vulnerabilities: list, compliance: dict, output_pa
     s = get_styles()
     story = []
 
-    # Cover
     story.append(Spacer(1, 1*cm))
     story.append(Paragraph("RiskLens AI", s["title"]))
     story.append(Paragraph("Technical Vulnerability Report", s["subtitle"]))
@@ -164,7 +153,6 @@ def generate_technical_report(vulnerabilities: list, compliance: dict, output_pa
     story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#2c3e50')))
     story.append(Spacer(1, 0.5*cm))
 
-    # Technical Summary
     story.append(Paragraph("1. Technical Summary", s["section"]))
     total = len(vulnerabilities)
     critical = sum(1 for v in vulnerabilities if v.get("severity","").lower() == "critical")
@@ -174,10 +162,9 @@ def generate_technical_report(vulnerabilities: list, compliance: dict, output_pa
 
     story.append(Paragraph(
         f"Total vulnerabilities scanned: <b>{total}</b>. "
-        f"Breakdown — Critical: <b>{critical}</b>, High: <b>{high}</b>, "
+        f"Breakdown - Critical: <b>{critical}</b>, High: <b>{high}</b>, "
         f"Medium: <b>{medium}</b>, Low: <b>{low}</b>.", s["body"]))
 
-    # Full Vulnerability Table
     story.append(Spacer(1, 0.3*cm))
     story.append(Paragraph("2. Full Vulnerability List", s["section"]))
     
@@ -206,7 +193,6 @@ def generate_technical_report(vulnerabilities: list, compliance: dict, output_pa
     ]))
     story.append(vuln_table)
 
-    # Compliance Details
     story.append(Spacer(1, 0.3*cm))
     story.append(Paragraph("3. Compliance Details", s["section"]))
     comp_data = [["Framework", "Score", "Controls", "Status", "Action"]]
@@ -231,17 +217,15 @@ def generate_technical_report(vulnerabilities: list, compliance: dict, output_pa
     ]))
     story.append(comp_table)
 
-    # Remediation Steps
     story.append(Spacer(1, 0.3*cm))
     story.append(Paragraph("4. Remediation Steps", s["section"]))
     for i, v in enumerate(vulnerabilities[:10], 1):
-        story.append(Paragraph(f"<b>{i}. {v.get('title','Unknown')}</b>  —  {v.get('severity','N/A')}", s["subsection"]))
+        story.append(Paragraph(f"<b>{i}. {v.get('title','Unknown')}</b>  -  {v.get('severity','N/A')}", s["subsection"]))
         if v.get("remediation"):
             story.append(Paragraph(f"Fix: {v.get('remediation')}", s["body"]))
         else:
             story.append(Paragraph(f"CVE: {v.get('cve','N/A')}  |  Host: {v.get('host','N/A')}  |  Apply latest security patches.", s["body"]))
 
-    # Footer
     story.append(Spacer(1, 0.5*cm))
     story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor('#cccccc')))
     story.append(Paragraph("RiskLens AI  |  Technical Report  |  Red Cross Research Foundation  |  Confidential", s["small"]))

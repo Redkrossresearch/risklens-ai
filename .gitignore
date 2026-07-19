@@ -1,8 +1,12 @@
 venv/
 venv_new/
 ven/
+.venv/
 __pycache__/
 *.pyc
 .env
 uploads/
 reports/*.pdf
+.pytest_cache/
+compliance_db/
+source_docs/

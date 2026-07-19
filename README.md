@@ -1,16 +1,89 @@
-# React + Vite
+# RiskLens AI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AI-powered Cyber Risk & Compliance Analyzer — Red Cross Research Foundation internship project.
 
-Currently, two official plugins are available:
+## Backend
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+FastAPI backend with PostgreSQL (Supabase), JWT-based Role Based Access Control (Admin/Analyst/Viewer),
+AI-powered vulnerability risk scoring (Ollama/LangChain), and PDF report generation (Executive/Technical).
 
-## React Compiler
+Run locally:
+```powershell
+py -m uvicorn main:app --port 8001 --reload
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## RiskLens ChromaDB — Compliance Search Service
 
-## Expanding the ESLint configuration
+This is a local-development compliance search service. It stores starter ISO,
+NIST, and CIS control text in a persistent Chroma collection.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 1. Create and activate a virtual environment
+
+From PowerShell:
+```powershell
+cd risklens_chromadb
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+If PowerShell blocks activation, use the virtual environment's Python directly:
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+### 2. Configure a fresh secret
+
+Generate a secret:
+```powershell
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Copy that value and set it only for the current PowerShell session:
+```powershell
+$env:RISKLENS_SHARED_SECRET = "paste-the-new-random-value-here"
+```
+
+Do not reuse `RiskLensSecureToken2026`; it has been exposed. Do not place the new
+secret in Python files, Git, screenshots, tickets, or ordinary application logs.
+
+### 3. Run the service smoke test
+
+```powershell
+python risklens_db.py
+```
+
+On the first run, Chroma's default local embedding model may need to download.
+The database is created under `compliance_db/` and is excluded from Git.
+
+### 4. Run security-focused unit tests
+
+```powershell
+python -m pytest -q
+```
+
+### Backend integration
+
+Import `SecureComplianceDatabase`, create one long-lived instance during backend
+startup, and call `secure_query`. Do not create a client for every request.
+
+```python
+from risklens_db import SecureComplianceDatabase
+database = SecureComplianceDatabase(db_path="./compliance_db")
+result = database.secure_query(
+    user_token=request_token,
+    raw_finding="Inactive accounts are not being removed.",
+    n_results=3,
+)
+```
+
+The backend must additionally provide TLS, rate limiting, structured audit logs,
+authorization, and secret rotation. A static shared secret is only a prototype
+control, not sufficient production identity management.
+
+### Production note
+
+Chroma documents `PersistentClient` as a local development/testing client. Use a
+server-backed deployment with authentication, TLS, backups, restricted network
+access, and a documented retention policy for production.
