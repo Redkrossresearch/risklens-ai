@@ -11,6 +11,7 @@ from ticketing.routes import router as ticketing_router
 from ticketing.models import Ticket
 from report_generator import generate_executive_report, generate_technical_report
 from auth import get_role_from_token
+from fastapi.responses import FileResponse
 
 Base.metadata.create_all(bind=engine)
 
@@ -127,3 +128,12 @@ def executive_report():
 def technical_report():
     path = generate_technical_report(upload_vulnerabilities, COMPLIANCE_DATA)
     return {"message": "Technical report generated", "path": path}
+@app.get("/report/executive/download")
+def download_executive_report():
+    path = generate_executive_report(upload_vulnerabilities, COMPLIANCE_DATA)
+    return FileResponse(path, media_type="application/pdf", filename="executive_report.pdf")
+
+@app.get("/report/technical/download")
+def download_technical_report():
+    path = generate_technical_report(upload_vulnerabilities, COMPLIANCE_DATA)
+    return FileResponse(path, media_type="application/pdf", filename="technical_report.pdf")
