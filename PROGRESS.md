@@ -17,15 +17,15 @@
 - Resolved merge conflicts: separated report_generator.py (PDF reports) from compliance_report.py (RAG compliance mapping)
 - Abhiya's improved AI prompt rules merged (risk_rating validation, compliance control code format, "Not mapped" fallback)
 - PDF upload fully implemented (pdfplumber table extraction + AI analysis + DB persistence)
+- Real-world scanner format compatibility: tested with Nessus-format and Qualys-format sample CSVs
+  (added column fallback mapping for Name/Risk/IP/CVE ID/Synopsis/Threat, Qualys numeric severity → text normalization)
 
 ## In Progress / Pending
 - XLSX upload fully working (parsing, AI analysis, DB persistence) - fixed column header whitespace bug
 - PDF download endpoints added (/report/executive/download, /report/technical/download) for Tanishka's frontend
 
-
 ## ❌ Not Done Yet
 - AI model 14B test (currently 1.7B)
-- PDF upload still stub - no vulnerability parsing yet
 
 ## Team Status
 - Shubham: compliance module pending push
