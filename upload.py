@@ -1,4 +1,4 @@
-from parser import parse_csv, parse_xlsx
+from parser import parse_csv, parse_xlsx, parse_pdf
 import os
 import pandas as pd
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
@@ -109,13 +109,51 @@ async def upload_xlsx(file: UploadFile = File(...), db: Session = Depends(get_db
     }
 
 @router.post("/upload/pdf")
-async def upload_pdf(file: UploadFile = File(...)):
+async def upload_pdf(file: UploadFile = File(...), db: Session = Depends(get_db)):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files allowed")
     file_path = f"{UPLOAD_DIR}/{file.filename}"
     with open(file_path, "wb") as f:
         f.write(await file.read())
-    reader = PdfReader(file_path)
-    pages = len(reader.pages)
-    uploaded_files_log.append({"name": file.filename, "type": "PDF", "status": "Uploaded"})
-    return {"message": "PDF uploaded", "pages": pages}
+
+    vulnerabilities = parse_pdf(file_path)
+
+    if not vulnerabilities:
+        uploaded_files_log.append({"name": file.filename, "type": "PDF", "status": "No table data found"})
+        return {"message": "PDF uploaded but no vulnerability table found", "total": 0, "data": []}
+
+    analyzed_vulnerabilities = []
+    for vuln in vulnerabilities:
+        vuln_model = VulnerabilityModel(**vuln)
+        ai_result = generate_risk_analysis(vuln_model)
+        analyzed_vulnerabilities.append(ai_result)
+
+        db_vuln = Vulnerability(
+            vulnerability_id=ai_result.get("vulnerability_id"),
+            title=ai_result.get("title"),
+            cve=ai_result.get("cve"),
+            severity=ai_result.get("severity"),
+            host=ai_result.get("host"),
+            description=ai_result.get("description"),
+            risk_title=ai_result.get("risk_title"),
+            executive_summary=ai_result.get("executive_summary"),
+            business_impact=ai_result.get("business_impact"),
+            likelihood=ai_result.get("likelihood"),
+            risk_rating=ai_result.get("risk_rating"),
+            risk_score=ai_result.get("risk_score"),
+            remediation=ai_result.get("remediation"),
+            compliance=ai_result.get("compliance"),
+            ticket=ai_result.get("ticket"),
+        )
+        db.add(db_vuln)
+
+    db.commit()
+
+    parsed_vulnerabilities.extend(analyzed_vulnerabilities)
+    uploaded_files_log.append({"name": file.filename, "type": "PDF", "status": "Parsed"})
+
+    return {
+        "message": "PDF uploaded and AI analyzed",
+        "total": len(analyzed_vulnerabilities),
+        "data": analyzed_vulnerabilities
+    }
