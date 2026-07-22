@@ -16,11 +16,12 @@
 - Shubham's compliance/RAG module merged (api.py, ingest.py, rag_pipeline.py, risklens_db.py, compliance_report.py)
 - Resolved merge conflicts: separated report_generator.py (PDF reports) from compliance_report.py (RAG compliance mapping)
 - Abhiya's improved AI prompt rules merged (risk_rating validation, compliance control code format, "Not mapped" fallback)
+- PDF upload fully implemented (pdfplumber table extraction + AI analysis + DB persistence)
 
 ## In Progress / Pending
 - XLSX upload fully working (parsing, AI analysis, DB persistence) - fixed column header whitespace bug
 - PDF download endpoints added (/report/executive/download, /report/technical/download) for Tanishka's frontend
-- PDF upload still stub - no vulnerability parsing yet
+
 
 ## ❌ Not Done Yet
 - AI model 14B test (currently 1.7B)
