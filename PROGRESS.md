@@ -36,7 +36,14 @@
 - Multiple Claude chat sessions have been used for this project — same laptop/project folder,
   so code changes from one session are visible in another (files are shared, chats are not).
   ALWAYS verify actual file content via terminal commands before assuming something is/isn't done.
-  
+
   - Note: Supabase free-tier project can auto-pause after inactivity, causing DNS resolution errors.
   Fix: resume project from Supabase dashboard, and use Transaction Pooler connection string (port 6543)
   instead of direct connection (port 5432) for better network compatibility.
+
+  ## Shubham's Compliance/RAG API (tested separately)
+- Shubham's RAG Compliance API (api.py) tested end-to-end on separate port (8002):
+  health check, JWT login, /map compliance mapping - all working
+  (requires RISKLENS_JWT_SECRET, RISKLENS_API_USERNAME, RISKLENS_API_PASSWORD in .env)
+- Note: api.py runs as standalone service (own auth, own port) - NOT integrated into main.py.
+  Architecture decision (merge into main app vs keep as microservice) needs team discussion.
