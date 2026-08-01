@@ -20,7 +20,6 @@ Production notes:
 - Use OAuth/OIDC provider for production identity.
 - Use WAF/DDoS protection at cloud/network edge.
 """
-
 from __future__ import annotations
 
 import asyncio
@@ -41,8 +40,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field
 
 from rag_pipeline import RAGErrorResponse, RiskLensRAGPipeline
-from report_generator import generate_compliance_report, report_to_markdown
+from compliance_report import generate_compliance_report, report_to_markdown
 from risklens_db import SecureComplianceDatabase, TechnicalFindingInput
+
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # ==========================================
