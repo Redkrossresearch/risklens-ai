@@ -6,6 +6,7 @@ import UploadPage from "./pages/UploadPage";
 import ReportsPage from "./pages/ReportsPage";
 import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 function ProtectedLayout() {
   const token = localStorage.getItem("token");
@@ -34,6 +35,7 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route path="/*" element={<ProtectedLayout />} />
     </Routes>
   );

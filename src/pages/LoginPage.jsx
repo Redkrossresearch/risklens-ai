@@ -70,6 +70,13 @@ function LoginPage() {
         >
           Login
         </button>
+
+        <p className="text-center text-sm text-gray-500 mt-4">
+          Don't have an account?{" "}
+          <a href="/register" className="text-blue-600 font-medium">
+            Register
+          </a>
+        </p>
       </form>
     </div>
   );
