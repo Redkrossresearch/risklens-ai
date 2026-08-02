@@ -33,6 +33,14 @@ function Sidebar() {
         </li>
         <li>
           <Link
+            to="/tickets"
+            className="cursor-pointer hover:text-blue-400"
+          >
+            Ticketing
+          </Link>
+        </li>
+        <li>
+          <Link
             to="/settings"
             className="cursor-pointer hover:text-blue-400"
           >
