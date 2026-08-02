@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi import Header
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database import Base, engine, get_db
@@ -16,6 +17,15 @@ from fastapi.responses import FileResponse
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="RiskLens AI")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(upload_router)
 app.include_router(ticketing_router)
@@ -128,6 +138,7 @@ def executive_report():
 def technical_report():
     path = generate_technical_report(upload_vulnerabilities, COMPLIANCE_DATA)
     return {"message": "Technical report generated", "path": path}
+
 @app.get("/report/executive/download")
 def download_executive_report():
     path = generate_executive_report(upload_vulnerabilities, COMPLIANCE_DATA)

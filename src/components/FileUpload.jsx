@@ -14,11 +14,11 @@ function FileUpload() {
     const extension = file.name.split(".").pop().toLowerCase();
 
     if (extension === "pdf") {
-      uploadUrl = "http://127.0.0.1:8000/upload/pdf";
+      uploadUrl = "http://127.0.0.1:8001/upload/pdf";
     } else if (extension === "csv") {
-      uploadUrl = "http://127.0.0.1:8000/upload/csv";
+      uploadUrl = "http://127.0.0.1:8001/upload/csv";
     } else if (extension === "xlsx") {
-      uploadUrl = "http://127.0.0.1:8000/upload/xlsx";
+      uploadUrl = "http://127.0.0.1:8001/upload/xlsx";
     } else {
       alert("Only PDF, CSV and XLSX files are supported.");
       return;
