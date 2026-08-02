@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import DashboardPage from "./pages/DashboardPage";
 import UploadPage from "./pages/UploadPage";
 import ReportsPage from "./pages/ReportsPage";
+import SettingsPage from "./pages/SettingsPage";
 import LoginPage from "./pages/LoginPage";
 
 function ProtectedLayout() {
@@ -22,6 +23,7 @@ function ProtectedLayout() {
           <Route path="/" element={<DashboardPage />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Routes>
       </div>
     </div>

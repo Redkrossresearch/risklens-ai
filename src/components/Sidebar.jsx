@@ -31,8 +31,13 @@ function Sidebar() {
             Reports
           </Link>
         </li>
-        <li className="cursor-pointer hover:text-blue-400">
-          Settings
+        <li>
+          <Link
+            to="/settings"
+            className="cursor-pointer hover:text-blue-400"
+          >
+            Settings
+          </Link>
         </li>
       </ul>
     </div>
