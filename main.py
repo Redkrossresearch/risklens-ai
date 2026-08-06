@@ -129,22 +129,56 @@ def analyze(token: str, vulnerability_id: str, title: str, severity: str, descri
         "status": result["status"]
     }
 
+
+def _filter_by_cve(cve: str):
+    """
+    Helper: filters upload_vulnerabilities by CVE (case-insensitive, trimmed).
+    Returns the filtered list. Raises 404 if cve was given but nothing matched.
+    """
+    if not cve:
+        return upload_vulnerabilities
+
+    filtered = [
+        v for v in upload_vulnerabilities
+        if v.get("cve", "").strip().lower() == cve.strip().lower()
+    ]
+    if not filtered:
+        raise HTTPException(status_code=404, detail=f"No vulnerabilities found for CVE: {cve}")
+    return filtered
+
+
 @app.get("/report/executive")
-def executive_report():
-    path = generate_executive_report(upload_vulnerabilities, COMPLIANCE_DATA)
-    return {"message": "Executive report generated", "path": path}
+def executive_report(cve: str = None):
+    vulnerabilities = _filter_by_cve(cve)
+    path = generate_executive_report(vulnerabilities, COMPLIANCE_DATA)
+    return {
+        "message": "Executive report generated",
+        "path": path,
+        "filtered_cve": cve,
+        "count": len(vulnerabilities)
+    }
 
 @app.get("/report/technical")
-def technical_report():
-    path = generate_technical_report(upload_vulnerabilities, COMPLIANCE_DATA)
-    return {"message": "Technical report generated", "path": path}
+def technical_report(cve: str = None):
+    vulnerabilities = _filter_by_cve(cve)
+    path = generate_technical_report(vulnerabilities, COMPLIANCE_DATA)
+    return {
+        "message": "Technical report generated",
+        "path": path,
+        "filtered_cve": cve,
+        "count": len(vulnerabilities)
+    }
 
 @app.get("/report/executive/download")
-def download_executive_report():
-    path = generate_executive_report(upload_vulnerabilities, COMPLIANCE_DATA)
-    return FileResponse(path, media_type="application/pdf", filename="executive_report.pdf")
+def download_executive_report(cve: str = None):
+    vulnerabilities = _filter_by_cve(cve)
+    path = generate_executive_report(vulnerabilities, COMPLIANCE_DATA)
+    filename = f"executive_report_{cve}.pdf" if cve else "executive_report.pdf"
+    return FileResponse(path, media_type="application/pdf", filename=filename)
 
 @app.get("/report/technical/download")
-def download_technical_report():
-    path = generate_technical_report(upload_vulnerabilities, COMPLIANCE_DATA)
-    return FileResponse(path, media_type="application/pdf", filename="technical_report.pdf")
+def download_technical_report(cve: str = None):
+    vulnerabilities = _filter_by_cve(cve)
+    path = generate_technical_report(vulnerabilities, COMPLIANCE_DATA)
+    filename = f"technical_report_{cve}.pdf" if cve else "technical_report.pdf"
+    return FileResponse(path, media_type="application/pdf", filename=filename)
